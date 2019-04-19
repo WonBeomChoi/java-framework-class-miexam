@@ -16,8 +16,9 @@ public class UserDao {
         User user = null;
         try {
             connection = connetionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("select * from userinfo where id = ?");
-            preparedStatement.setLong(1, id);
+
+            StatementStrategy statementStrategy = new GetStatementStrategy(id);
+            preparedStatement = statementStrategy.makePrepareStatement(connection);
 
             resultSet = preparedStatement.executeQuery();
 
@@ -59,27 +60,19 @@ public class UserDao {
     public Long add(User user) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
+
         Long id = null;
         try {
             connection = connetionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("insert into userinfo(name,password) values (?,?)");
-            preparedStatement.setString(1,user.getName());
-            preparedStatement.setString(2, user.getPassword());
+
+            StatementStrategy statementStrategy = new AddStatmentStrategy(user);
+            preparedStatement = statementStrategy.makePrepareStatement(connection);
             preparedStatement.executeUpdate();
 
-            preparedStatement = connection.prepareStatement("select last_insert_id()");
-            resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-            id = resultSet.getLong(1);
+
+//            id = resultSet.getLong(1);
+            id = getLastInsertId(connection);
         } finally {
-            if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
@@ -101,16 +94,32 @@ public class UserDao {
 
     }
 
+    private Long getLastInsertId(Connection connection) throws SQLException {
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Long id = null;
+        try {
+            preparedStatement = connection.prepareStatement("select last_insert_id()");
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+
+            id = resultSet.getLong(1);
+        } finally {
+            preparedStatement.close();
+            resultSet.close();
+        }
+
+        return id;
+    }
+
     public void update(User user) throws SQLException {
 
         Connection connection= null;
         PreparedStatement preparedStatement=null;
         try {
             connection = connetionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("update userinfo set name =?, password=? where id =?");
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getPassword());
-            preparedStatement.setLong(3, user.getId());
+            StatementStrategy statementStrategy = new UpdateStatementStrategy(user);
+            preparedStatement = statementStrategy.makePrepareStatement(connection);
             preparedStatement.executeUpdate();
         } finally {
 
@@ -139,8 +148,8 @@ public class UserDao {
         PreparedStatement preparedStatement=null;
         try {
             connection = connetionMaker.getConnection();
-            preparedStatement = connection.prepareStatement("delete from userinfo where id = ?");
-            preparedStatement.setLong(1, id);
+            StatementStrategy statementStrategy = new DeleteStatementStrategy(id);
+            preparedStatement = statementStrategy.makePrepareStatement(connection);
             preparedStatement.executeUpdate();
         } finally {
 
