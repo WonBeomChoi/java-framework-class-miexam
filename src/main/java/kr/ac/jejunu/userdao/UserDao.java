@@ -5,8 +5,8 @@ import java.sql.*;
 
 public class UserDao {
     private final Context context;
-    UserDao(DataSource dataSource){
-        context = new Context(dataSource);
+    UserDao(Context context){
+        this.context = context;
     }
     public User get(Long id) throws SQLException {
         String sql = "select * from userinfo where id = ?";

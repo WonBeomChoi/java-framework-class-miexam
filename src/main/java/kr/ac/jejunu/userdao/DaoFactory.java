@@ -22,10 +22,13 @@ public class DaoFactory {
 
     @Bean
     public UserDao getUserDao() throws ClassNotFoundException {
-        return new UserDao(getDataSource());
+        return new UserDao(getContext());
     }
 
-
+    @Bean
+    public Context getContext() throws ClassNotFoundException {
+        return new Context(getDataSource());
+    }
     @Bean
     public DataSource getDataSource() throws ClassNotFoundException {
         SimpleDriverDataSource simpleDriverDataSource = new SimpleDriverDataSource();
