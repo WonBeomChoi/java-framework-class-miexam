@@ -7,7 +7,6 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import javax.sql.DataSource;
 import java.sql.Driver;
-import java.sql.SQLException;
 
 @Configuration
 public class DaoFactory {
@@ -22,13 +21,13 @@ public class DaoFactory {
     String password = "dnjs2310!@";
 
     @Bean
-    public UserDao getUserDao() throws SQLException, ClassNotFoundException {
+    public UserDao getUserDao() throws ClassNotFoundException {
         return new UserDao(getDataSource());
     }
+
+
     @Bean
     public DataSource getDataSource() throws ClassNotFoundException {
-
-
         SimpleDriverDataSource simpleDriverDataSource = new SimpleDriverDataSource();
         simpleDriverDataSource.setDriverClass((Class<? extends Driver>) Class.forName(className));
         simpleDriverDataSource.setUsername(userName);
