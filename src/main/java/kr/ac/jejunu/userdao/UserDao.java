@@ -3,8 +3,8 @@ package kr.ac.jejunu.userdao;
 import java.sql.*;
 
 public class UserDao {
-    private final ConnetionMaker connetionMaker;
-    UserDao(ConnetionMaker connetionMaker){
+    private final ConnectionMaker connetionMaker;
+    UserDao(ConnectionMaker connetionMaker){
         this.connetionMaker = connetionMaker;
     }
 
@@ -25,7 +25,6 @@ public class UserDao {
         resultSet.close();
         preparedStatement.close();
         connection.close();
-        //리턴
         return user;
     }
 
