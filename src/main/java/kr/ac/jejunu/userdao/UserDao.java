@@ -1,32 +1,44 @@
 package kr.ac.jejunu.userdao;
 
-import javax.sql.DataSource;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.sql.*;
 
 public class UserDao {
-    private final Context context;
-    UserDao(Context context){
-        this.context = context;
+    private final JejuJdbcTemplate jdbcTemplate;
+    UserDao(JejuJdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
     }
     public User get(Long id) throws SQLException {
         String sql = "select * from userinfo where id = ?";
-        Object[] params = new Object[] {id};
-        return context.get(sql, params);
+        Object[] params = new Object[] {id}; User result = null;
+        try {
+            result = jdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> {
+                User user = new User();
+                user.setId(rs.getLong("id"));
+                user.setName(rs.getString("name"));
+                user.setPassword(rs.getString("password"));
+                return user;
+            });
+        } catch (EmptyResultDataAccessException e) {
+        }
+        return result;
     }
     public Long add(User user) throws SQLException {
         String sql = "insert into userinfo(name,password) values (?,?)";
         Object[] params = new Object[] {user.getName(), user.getPassword()};
-        return context.add(sql, params);
+        return jdbcTemplate.add(sql, params);
     }
     public void update(User user) throws SQLException {
         String sql = "update userinfo set name =?, password=? where id =?";
         Object[] params = new Object[] {user.getName(), user.getPassword(), user.getId()};
-        context.update(sql, params);
+        jdbcTemplate.update(sql, params);
     }
     public void delete(Long id) throws SQLException{
         String sql = "delete from userinfo where id = ?";
         Object[] params = new Object[] {id};
-        context.update(sql, params);
+        jdbcTemplate.update(sql, params);
     }
 
 

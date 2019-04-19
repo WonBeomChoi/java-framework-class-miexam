@@ -22,21 +22,24 @@ public class DaoFactory {
 
     @Bean
     public UserDao getUserDao() throws ClassNotFoundException {
-        return new UserDao(getContext());
+        return new UserDao(jdbcTemplate());
     }
 
     @Bean
-    public Context getContext() throws ClassNotFoundException {
-        return new Context(getDataSource());
+    public JejuJdbcTemplate jdbcTemplate() throws ClassNotFoundException {
+        return new JejuJdbcTemplate(getDataSource());
     }
     @Bean
     public DataSource getDataSource() throws ClassNotFoundException {
-        SimpleDriverDataSource simpleDriverDataSource = new SimpleDriverDataSource();
-        simpleDriverDataSource.setDriverClass((Class<? extends Driver>) Class.forName(className));
-        simpleDriverDataSource.setUsername(userName);
-        simpleDriverDataSource.setPassword(password);
-        simpleDriverDataSource.setUrl(url);
-
-        return simpleDriverDataSource;
+        SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
+        try {
+            dataSource.setDriverClass((Class<? extends Driver>) Class.forName(className));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        dataSource.setUrl(url);
+        dataSource.setUsername(userName);
+        dataSource.setPassword(password);
+        return dataSource;
     }
     }
