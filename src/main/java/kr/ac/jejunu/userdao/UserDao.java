@@ -4,170 +4,24 @@ import javax.sql.DataSource;
 import java.sql.*;
 
 public class UserDao {
-    private final DataSource connetionMaker;
+    private final Context context;
     UserDao(DataSource dataSource){
-        this.connetionMaker = dataSource;
+        context = new Context(dataSource);
     }
-
     public User get(Long id) throws SQLException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        User user = null;
-        try {
-            connection = connetionMaker.getConnection();
-
-            StatementStrategy statementStrategy = new GetStatementStrategy(id);
-            preparedStatement = statementStrategy.makePrepareStatement(connection);
-
-            resultSet = preparedStatement.executeQuery();
-
-
-            if (resultSet.next()) {
-                user = new User();
-                user.setId(resultSet.getLong("id"));
-                user.setName(resultSet.getString("name"));
-                user.setPassword(resultSet.getString("password"));
-            }
-
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return user;
+        StatementStrategy statementStrategy = new GetStatementStrategy(id);
+        return context.getContext(statementStrategy);
     }
-
-
     public Long add(User user) throws SQLException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-
-        Long id = null;
-        try {
-            connection = connetionMaker.getConnection();
-
-            StatementStrategy statementStrategy = new AddStatmentStrategy(user);
-            preparedStatement = statementStrategy.makePrepareStatement(connection);
-            preparedStatement.executeUpdate();
-
-
-//            id = resultSet.getLong(1);
-            id = getLastInsertId(connection);
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-
-        return id;
-
+        StatementStrategy statementStrategy = new AddStatmentStrategy(user);
+        return context.addContext(statementStrategy);
     }
-
-    private Long getLastInsertId(Connection connection) throws SQLException {
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        Long id = null;
-        try {
-            preparedStatement = connection.prepareStatement("select last_insert_id()");
-            resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-
-            id = resultSet.getLong(1);
-        } finally {
-            preparedStatement.close();
-            resultSet.close();
-        }
-
-        return id;
-    }
-
     public void update(User user) throws SQLException {
-
-        Connection connection= null;
-        PreparedStatement preparedStatement=null;
-        try {
-            connection = connetionMaker.getConnection();
-            StatementStrategy statementStrategy = new UpdateStatementStrategy(user);
-            preparedStatement = statementStrategy.makePrepareStatement(connection);
-            preparedStatement.executeUpdate();
-        } finally {
-
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-
-
+        StatementStrategy statementStrategy = new UpdateStatementStrategy(user);
+        context.updateContext(statementStrategy);
     }
-
     public void delete(Long id) throws SQLException{
-        Connection connection= null;
-        PreparedStatement preparedStatement=null;
-        try {
-            connection = connetionMaker.getConnection();
-            StatementStrategy statementStrategy = new DeleteStatementStrategy(id);
-            preparedStatement = statementStrategy.makePrepareStatement(connection);
-            preparedStatement.executeUpdate();
-        } finally {
-
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
+        StatementStrategy statementStrategy = new DeleteStatementStrategy(id);
+        context.updateContext(statementStrategy);
     }
 }
